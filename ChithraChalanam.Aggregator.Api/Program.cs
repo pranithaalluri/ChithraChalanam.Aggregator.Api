@@ -1,3 +1,5 @@
+using ChithraChalanam.Aggregator.Api.Services;
+using ChithraChalanam.Aggregator.Api.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -19,7 +21,9 @@ builder.Services.AddHttpClient("AuthService", client =>
 {
     client.BaseAddress = new Uri(builder.Configuration["Services:AuthService"]!);
 });
+builder.Services.AddScoped<IAggregatorMovieService, AggregatorMovieService>();
 
+builder.Services.AddScoped<IAggregatorAuthService, AggregatorAuthService>();
 builder.Services.AddControllers();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -83,11 +87,8 @@ builder.Services.AddSwaggerGen(c =>
 
 WebApplication app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
     app.UseSwagger();
     app.UseSwaggerUI();
-}
 
 app.UseHttpsRedirection();
 
