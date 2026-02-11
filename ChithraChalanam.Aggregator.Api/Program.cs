@@ -83,11 +83,12 @@ builder.Services.AddSwaggerGen(c =>
 
 WebApplication app = builder.Build();
 
-if (app.Environment.IsDevelopment())
+
+app.UseSwagger();
+app.UseSwaggerUI(options =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    options.EnableTryItOutByDefault();
+});
 
 app.UseHttpsRedirection();
 
