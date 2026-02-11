@@ -31,12 +31,6 @@ public class AggregatorMovieService : IAggregatorMovieService
             HttpClient castClient =
                 httpClientFactory.CreateClient("CastService");
 
-            if (!string.IsNullOrWhiteSpace(accessToken))
-            {
-                movieClient.DefaultRequestHeaders.Authorization =
-                    AuthenticationHeaderValue.Parse(accessToken);
-            }
-
             // ---- Movie ----
             HttpResponseMessage movieResponse =
                 await movieClient.GetAsync($"/api/movies/{movieId}");
@@ -53,7 +47,7 @@ public class AggregatorMovieService : IAggregatorMovieService
 
             // ---- Cast ----
             HttpResponseMessage castResponse =
-                await castClient.GetAsync($"/api/cast/by-movie/{movieId}");
+                await castClient.GetAsync($"/api/cast/movie/{movieId}");
 
             castResponse.EnsureSuccessStatusCode();
 
@@ -90,7 +84,7 @@ public class AggregatorMovieService : IAggregatorMovieService
                 httpClientFactory.CreateClient("CastService");
 
             HttpResponseMessage response =
-                await castClient.GetAsync($"/api/cast/by-movie/{movieId}");
+                await castClient.GetAsync($"/api/cast/movie/{movieId}");
 
             response.EnsureSuccessStatusCode();
 
@@ -107,3 +101,4 @@ public class AggregatorMovieService : IAggregatorMovieService
         }
     }
 }
+

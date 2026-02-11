@@ -29,7 +29,7 @@ public class AggregatorAuthController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterRequestDto request)
     {
-        AuthResponseDto response =
+        string? response =
             await aggregatorAuthService.RegisterAsync(request);
 
         return Ok(response);

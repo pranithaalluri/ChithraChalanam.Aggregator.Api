@@ -5,5 +5,5 @@ namespace ChithraChalanam.Aggregator.Api.Services.Interfaces;
 public interface IAggregatorAuthService
 {
     Task<AuthResponseDto> LoginAsync(LoginRequestDto request);
-    Task<AuthResponseDto> RegisterAsync(RegisterRequestDto request);
+    Task<string> RegisterAsync(RegisterRequestDto request);
 }

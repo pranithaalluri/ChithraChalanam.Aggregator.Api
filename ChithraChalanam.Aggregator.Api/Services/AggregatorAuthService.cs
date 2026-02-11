@@ -49,33 +49,28 @@ public class AggregatorAuthService : IAggregatorAuthService
         }
     }
 
-    public async Task<AuthResponseDto> RegisterAsync(RegisterRequestDto request)
+    public async Task<string> RegisterAsync(RegisterRequestDto request)
     {
-        try
+        HttpClient client =
+            httpClientFactory.CreateClient("AuthService");
+
+        StringContent content = new(
+            JsonSerializer.Serialize(request),
+            Encoding.UTF8,
+            "application/json");
+
+        HttpResponseMessage response =
+            await client.PostAsync("/api/auth/register", content);
+
+        string body =
+            await response.Content.ReadAsStringAsync();
+
+        if (!response.IsSuccessStatusCode)
         {
-            HttpClient client =
-                httpClientFactory.CreateClient("AuthService");
-
-            StringContent content = new(
-                JsonSerializer.Serialize(request),
-                Encoding.UTF8,
-                "application/json");
-
-            HttpResponseMessage response =
-                await client.PostAsync("/api/auth/register", content);
-
-            response.EnsureSuccessStatusCode();
-
-            string json =
-                await response.Content.ReadAsStringAsync();
-
-            return JsonSerializer.Deserialize<AuthResponseDto>(
-                json,
-                jsonOptions)!;
+            throw new Exception(body);
         }
-        catch (Exception ex)
-        {
-            throw new Exception("Registration failed.", ex);
-        }
+
+        return body;
     }
+
 }
