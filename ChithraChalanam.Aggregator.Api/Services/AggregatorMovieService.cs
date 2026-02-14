@@ -1,6 +1,5 @@
 ﻿using ChithraChalanam.Aggregator.Api.Dtos;
 using ChithraChalanam.Aggregator.Api.Services.Interfaces;
-using System.Net.Http.Headers;
 using System.Text.Json;
 
 namespace ChithraChalanam.Aggregator.Api.Services;
@@ -23,82 +22,71 @@ public class AggregatorMovieService : IAggregatorMovieService
         int movieId,
         string? accessToken)
     {
-        try
+        HttpClient movieClient =
+            httpClientFactory.CreateClient("MovieService");
+
+        HttpClient castClient =
+            httpClientFactory.CreateClient("CastService");
+
+        // ---- Movie ----
+        HttpResponseMessage movieResponse =
+            await movieClient.GetAsync($"/api/movies/{movieId}");
+
+        movieResponse.EnsureSuccessStatusCode();
+
+        string movieJson =
+            await movieResponse.Content.ReadAsStringAsync();
+
+        MovieDetailsResponse movie =
+            JsonSerializer.Deserialize<MovieDetailsResponse>(
+                movieJson,
+                jsonOptions)!;
+
+        // ---- Cast ----
+        HttpResponseMessage castResponse =
+            await castClient.GetAsync($"/api/cast/movie/{movieId}");
+
+        castResponse.EnsureSuccessStatusCode();
+
+        string castJson =
+            await castResponse.Content.ReadAsStringAsync();
+
+        List<MovieCreditDto> cast =
+            JsonSerializer.Deserialize<List<MovieCreditDto>>(
+                castJson,
+                jsonOptions) ?? [];
+
+        return new AggregatorMovieResponse
         {
-            HttpClient movieClient =
-                httpClientFactory.CreateClient("MovieService");
-
-            HttpClient castClient =
-                httpClientFactory.CreateClient("CastService");
-
-            // ---- Movie ----
-            HttpResponseMessage movieResponse =
-                await movieClient.GetAsync($"/api/movies/{movieId}");
-
-            movieResponse.EnsureSuccessStatusCode();
-
-            string movieJson =
-                await movieResponse.Content.ReadAsStringAsync();
-
-            MovieDetailsResponse movie =
-                JsonSerializer.Deserialize<MovieDetailsResponse>(
-                    movieJson,
-                    jsonOptions)!;
-
-            // ---- Cast ----
-            HttpResponseMessage castResponse =
-                await castClient.GetAsync($"/api/cast/movie/{movieId}");
-
-            castResponse.EnsureSuccessStatusCode();
-
-            string castJson =
-                await castResponse.Content.ReadAsStringAsync();
-
-            List<MovieCreditDto> cast =
-                JsonSerializer.Deserialize<List<MovieCreditDto>>(
-                    castJson,
-                    jsonOptions) ?? new();
-
-            return new AggregatorMovieResponse
+            Movie = movie,
+            Cast = cast,
+            Links = new AggregatorLinks
             {
-                Movie = movie,
-                Cast = cast,
-                Links = new AggregatorLinks
-                {
-                    Movie = $"/api/aggregator/movies/{movieId}",
-                    Cast = $"/api/aggregator/movies/{movieId}/cast"
-                }
-            };
-        }
-        catch (Exception ex)
-        {
-            throw new Exception("Failed to aggregate movie details.", ex);
-        }
+                Movie = $"/api/aggregator/movies/{movieId}",
+                Cast = $"/api/aggregator/movies/{movieId}/cast"
+            }
+        };
     }
+
 
     public async Task<List<MovieCreditDto>> GetCastOnlyAsync(int movieId)
     {
-        try
-        {
-            HttpClient castClient =
-                httpClientFactory.CreateClient("CastService");
 
-            HttpResponseMessage response =
-                await castClient.GetAsync($"/api/cast/movie/{movieId}");
+        HttpClient castClient =
+            httpClientFactory.CreateClient("CastService");
 
-            response.EnsureSuccessStatusCode();
+        HttpResponseMessage response =
+            await castClient.GetAsync($"/api/cast/movie/{movieId}");
 
-            string json =
-                await response.Content.ReadAsStringAsync();
+        response.EnsureSuccessStatusCode();
 
-            return JsonSerializer.Deserialize<List<MovieCreditDto>>(
-                json,
-                jsonOptions) ?? new();
-        }
-        catch (Exception ex)
-        {
-            throw new Exception("Failed to fetch cast.", ex);
-        }
+        string json =
+            await response.Content.ReadAsStringAsync();
+
+        return JsonSerializer.Deserialize<List<MovieCreditDto>>(
+            json,
+            jsonOptions) ?? [];
+
     }
 }
 
