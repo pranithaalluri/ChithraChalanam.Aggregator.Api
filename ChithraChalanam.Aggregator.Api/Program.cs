@@ -1,12 +1,20 @@
+using ChithraChalanam.Aggregator.Api.Middlewares;
 using ChithraChalanam.Aggregator.Api.Services;
 using ChithraChalanam.Aggregator.Api.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Serilog;
 using System.Text;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Information()
+    .WriteTo.Console()
+    .WriteTo.File("Logs/log-.txt", rollingInterval: RollingInterval.Day)
+    .CreateLogger();
 
+builder.Host.UseSerilog();
 builder.Services.AddHttpClient("MovieService", client =>
 {
     client.BaseAddress = new Uri(builder.Configuration["Services:MovieService"]!);
@@ -86,8 +94,10 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 WebApplication app = builder.Build();
+app.UseSerilogRequestLogging();
+app.UseMiddleware<GlobalExceptionMiddleware>();
 
-    app.UseSwagger();
+app.UseSwagger();
     app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
@@ -97,4 +107,12 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.Run();
+try
+{
+    app.Run();
+}
+finally
+{
+    Log.CloseAndFlush();
+}
+
