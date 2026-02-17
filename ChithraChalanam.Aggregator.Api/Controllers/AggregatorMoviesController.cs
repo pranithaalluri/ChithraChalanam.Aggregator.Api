@@ -1,6 +1,7 @@
-﻿using ChithraChalanam.Aggregator.Api.Services.Interfaces;
-using Microsoft.AspNetCore.Mvc;
+﻿using ChithraChalanam.Aggregator.Api.Common;
 using ChithraChalanam.Aggregator.Api.Dtos;
+using ChithraChalanam.Aggregator.Api.Services.Interfaces;
+using Microsoft.AspNetCore.Mvc;
 namespace ChithraChalanam.Aggregator.Api.Controllers;
 
 [ApiController]
@@ -18,22 +19,20 @@ public class AggregatorMoviesController : ControllerBase
     [HttpGet("{id:int}")]
     public async Task<IActionResult> GetMovieWithCast(int id)
     {
-        string? accessToken =
-            Request.Headers["Authorization"].FirstOrDefault();
+        ApiResponse<AggregatorMovieResponse> response =
+            await aggregatorMovieService.GetMovieWithCastAsync(id);
 
-        AggregatorMovieResponse? response =
-            await aggregatorMovieService
-                .GetMovieWithCastAsync(id, accessToken);
-
-        return Ok(response);
+        return StatusCode(response.StatusCode, response);
     }
+
 
     [HttpGet("{id:int}/cast")]
     public async Task<IActionResult> GetCastOnly(int id)
     {
-        List<MovieCreditDto>? cast =
+        ApiResponse<List<MovieCreditDto>> response =
             await aggregatorMovieService.GetCastOnlyAsync(id);
 
-        return Ok(cast);
+        return StatusCode(response.StatusCode, response);
     }
+
 }

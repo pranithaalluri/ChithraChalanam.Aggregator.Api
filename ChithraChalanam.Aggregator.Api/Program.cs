@@ -29,6 +29,11 @@ builder.Services.AddHttpClient("AuthService", client =>
 {
     client.BaseAddress = new Uri(builder.Configuration["Services:AuthService"]!);
 });
+builder.Services.AddHttpClient("StreamService", client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["Services:StreamService"]!); 
+});
+
 builder.Services.AddScoped<IAggregatorMovieService, AggregatorMovieService>();
 
 builder.Services.AddScoped<IAggregatorAuthService, AggregatorAuthService>();
@@ -58,6 +63,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddAuthorization();
 
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddMemoryCache();
 
 builder.Services.AddSwaggerGen(c =>
 {
